@@ -126,7 +126,13 @@ export default function DashboardPage() {
                         <span style={{ fontWeight: 700 }}>{inv.amount_usdt} USDT</span>
                         <span className={`fp-badge ${inv.status === "paid" ? "fp-badge-success" : inv.status === "open" ? "fp-badge-info" : "fp-badge-error"}`}>{inv.status}</span>
                       </div>
-                      <span style={{ color: "var(--fp-muted)", fontSize: "0.74rem" }}>{inv.description ?? inv.id}</span>
+                      {inv.payer_address ? (
+                        <span style={{ color: "var(--fp-muted)", fontSize: "0.74rem" }}>
+                          Received payment from {inv.payer_name ?? `${inv.payer_address.slice(0, 6)}…${inv.payer_address.slice(-4)}`}
+                        </span>
+                      ) : (
+                        <span style={{ color: "var(--fp-muted)", fontSize: "0.74rem" }}>{inv.description ?? inv.id}</span>
+                      )}
                     </div>
                     {inv.explorer_url && (
                       <a href={inv.explorer_url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--fp-accent)", fontSize: "0.78rem" }}>tx ↗</a>

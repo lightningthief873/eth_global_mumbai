@@ -12,6 +12,7 @@ export interface Invoice {
   order_id: string | null;
   merchant_address: string;
   payer_address: string | null;
+  payer_name?: string | null;
   tx_hash: string | null;
   refund_tx_hash: string | null;
   explorer_url: string | null;

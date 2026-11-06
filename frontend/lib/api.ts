@@ -70,6 +70,7 @@ export interface ChargeResponse {
   amount_wei: string;
   pwsr_wei: string;
   customer: string;
+  customer_name?: string | null;
   merchant: string;
   explorer_url: string;
 }
@@ -80,6 +81,7 @@ export interface UsdtChargeResponse {
   amount_units: string;
   amount_usdt: string;
   customer: string;
+  customer_name?: string | null;
   merchant: string;
   explorer_url: string;
 }

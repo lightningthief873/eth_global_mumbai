@@ -3,6 +3,7 @@ export interface ReceiptView {
   amountDisplay: string;       // formatted primary amount
   reward?: { label: string; amount: string } | null;  // e.g. PWSR for WBT
   customer: string;
+  customerName?: string | null;
   merchant: string;
   tx_hash: string;
   explorer_url: string;
@@ -39,7 +40,11 @@ export default function TxReceipt({ receipt, onReset }: Props) {
       <div className="flex items-center gap-3">
         <CheckMark />
         <div>
-          <p className="fp-display" style={{ fontSize: "1.3rem" }}>Payment confirmed</p>
+          <p className="fp-display" style={{ fontSize: "1.3rem" }}>
+            {receipt.customerName
+              ? `Received payment from ${receipt.customerName}`
+              : "Payment received"}
+          </p>
           <p className="fp-mono" style={{ fontSize: "0.72rem", marginTop: "0.15rem" }}>SETTLED ON WHITECHAIN</p>
         </div>
       </div>

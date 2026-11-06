@@ -98,7 +98,10 @@ export default function CheckoutClient() {
                     </p>
                   </div>
                   {inv.payer_address && (
-                    <div><span className="fp-label">Paid by</span><p className="fp-mono">{inv.payer_address}</p></div>
+                    <div>
+                      <span className="fp-label">Paid by{inv.payer_name ? ` · ${inv.payer_name}` : ""}</span>
+                      <p className="fp-mono">{inv.payer_address}</p>
+                    </div>
                   )}
                   {Number(inv.refunded_units) > 0 && (
                     <p style={{ color: "var(--fp-warning)", fontSize: "0.85rem" }}>

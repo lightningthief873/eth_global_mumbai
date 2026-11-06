@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlmodel import Session, select
 
 from db import get_session
-from models import Enrollment, Invoice, Payment
+from models import Enrollment, Invoice, Payment, Customer
 from services import payment_service, usdt_service, invoice_service
 import secrets
 
@@ -14,6 +14,11 @@ router = APIRouter()
 def _is_out_of_funds(e: Exception) -> bool:
     s = str(e).lower()
     return "outoffunds" in s or "insufficient funds" in s or "-32003" in s
+
+
+def _customer_name(address: str, session: Session) -> Optional[str]:
+    c = session.exec(select(Customer).where(Customer.address == address)).first()
+    return c.alias if c and c.alias else None
 
 @router.post("/charge")
 async def charge(
@@ -59,6 +64,7 @@ async def charge(
             )
         raise HTTPException(502, f"Payment failed on-chain: {e}")
     receipt["explorer_url"] = f"https://explorer.testnet.whitechain.io/tx/{receipt['tx_hash']}"
+    receipt["customer_name"] = _customer_name(customer_address, session)
     return receipt
 
 
@@ -130,6 +136,7 @@ async def charge_usdt(
         "amount_units": str(amount_units),
         "amount_usdt": data["amount_usdt"],
         "customer": customer_address,
+        "customer_name": _customer_name(customer_address, session),
         "merchant": merchant,
         "explorer_url": data["explorer_url"],
     }

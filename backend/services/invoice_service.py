@@ -14,7 +14,7 @@ from typing import Optional
 import httpx
 from sqlmodel import Session, select
 
-from models import Invoice, Merchant
+from models import Invoice, Merchant, Customer
 from services import usdt_service, wallet_service, chain_service
 
 EXPLORER = "https://explorer.testnet.whitechain.io"
@@ -67,10 +67,18 @@ def create_invoice(
     return inv
 
 
-def _serialize(inv: Invoice) -> dict:
+def _customer_name(address: Optional[str], session: Optional[Session]) -> Optional[str]:
+    if not address or session is None:
+        return None
+    c = session.exec(select(Customer).where(Customer.address == address)).first()
+    return c.alias if c and c.alias else None
+
+
+def _serialize(inv: Invoice, payer_name: Optional[str] = None) -> dict:
     return {
         "id": inv.id,
         "status": inv.status,
+        "payer_name": payer_name,
         "amount_units": inv.amount_units,
         "amount_usdt": usdt_service.from_units(inv.amount_units),
         "refunded_units": inv.refunded_units,
@@ -90,13 +98,13 @@ def _serialize(inv: Invoice) -> dict:
     }
 
 
-def _fire_webhook(merchant: Optional[Merchant], event: str, inv: Invoice) -> None:
+def _fire_webhook(merchant: Optional[Merchant], event: str, inv: Invoice, payer_name: Optional[str] = None) -> None:
     if not merchant or not merchant.webhook_url:
         return
     try:
         httpx.post(
             merchant.webhook_url,
-            json={"event": event, "invoice": _serialize(inv)},
+            json={"event": event, "invoice": _serialize(inv, payer_name)},
             timeout=4.0,
         )
     except Exception:
@@ -120,8 +128,9 @@ def settle(inv: Invoice, payer_address: str, session: Session) -> dict:
     session.commit()
     session.refresh(inv)
 
-    _fire_webhook(get_merchant(inv.merchant_api_key, session), "invoice.paid", inv)
-    return _serialize(inv)
+    name = _customer_name(payer_address, session)
+    _fire_webhook(get_merchant(inv.merchant_api_key, session), "invoice.paid", inv, name)
+    return _serialize(inv, name)
 
 
 def refund(inv: Invoice, amount_units: int, session: Session) -> dict:
@@ -143,9 +152,10 @@ def refund(inv: Invoice, amount_units: int, session: Session) -> dict:
     session.commit()
     session.refresh(inv)
 
-    _fire_webhook(merchant, "invoice.refunded", inv)
-    return _serialize(inv)
+    name = _customer_name(inv.payer_address, session)
+    _fire_webhook(merchant, "invoice.refunded", inv, name)
+    return _serialize(inv, name)
 
 
-def serialize(inv: Invoice) -> dict:
-    return _serialize(inv)
+def serialize(inv: Invoice, session: Optional[Session] = None) -> dict:
+    return _serialize(inv, _customer_name(inv.payer_address, session))

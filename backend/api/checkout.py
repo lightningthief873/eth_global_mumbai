@@ -75,7 +75,7 @@ def get_invoice(invoice_id: str, session: Session = Depends(get_session)):
     inv = session.get(Invoice, invoice_id)
     if not inv:
         raise HTTPException(404, "Invoice not found")
-    return invoice_service.serialize(inv)
+    return invoice_service.serialize(inv, session)
 
 
 @router.get("/merchants/invoices")
@@ -88,7 +88,7 @@ def list_invoices(
         select(Invoice).where(Invoice.merchant_api_key == merchant.api_key)
     ).all()
     rows.sort(key=lambda i: i.created_at, reverse=True)
-    return [invoice_service.serialize(i) for i in rows]
+    return [invoice_service.serialize(i, session) for i in rows]
 
 
 # ---------------------------------------------------------------------------
