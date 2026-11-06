@@ -2,10 +2,12 @@
   "network": "whitechain-sepolia",
   "chainId": 1874,
   "deployer": "0x302478941faCdb2c9Dbb412B60e35354F0AF0027",
-  "rewardRate": "100000000000000000000",
+  "usdt": "0xcedfB56113143d55b2358b8CFbB0dEB5Ad2f55a7",
   "contracts": {
+    "PaymentHub": "0x8E95c4D0915D5d90D5633b4a245470b462147657",
     "PWSRToken": "0xE5C32424F213F8727057e936Fa0381675161947C",
     "PaymentProcessor": "0x8254525bFD51B0f13B5CE171DEbe11b6b70d34FE",
     "BiometricRegistry": "0x6E64d396F09550278c75839A2E4bc0A2848e3eB0"
-  }
+  },
+  "note": "PaymentHub is the USDT checkout/invoice/refund contract (main flow). PWSR/PaymentProcessor/BiometricRegistry back the biometric express path."
 }
