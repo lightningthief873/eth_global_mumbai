@@ -183,12 +183,12 @@ uv run python scripts/seed_demo.py   # enroll sample faces + fund wallets
 
 ## Smart Contracts
 
-| Contract | Description |
-| --- | --- |
-| `PWSRToken` | ERC-20 reward token; minted by `PaymentProcessor` on every payment |
-| `BiometricRegistry` | On-chain enrollment record + fresh-nonce / TTL access policy |
-| `PaymentProcessor` | Receives WBT, forwards to merchant, mints PWSR reward |
-| `ICrossChainRewards` | Interface stub for future cross-chain PWSR bridging |
+| Contract | Address (Whitechain Sepolia) | Description |
+| --- | --- | --- |
+| `PWSRToken` | [`0xE5C32424F213F8727057e936Fa0381675161947C`](https://explorer.testnet.whitechain.io/address/0xE5C32424F213F8727057e936Fa0381675161947C) | ERC-20 reward token; minted by `PaymentProcessor` on every payment |
+| `BiometricRegistry` | [`0x6E64d396F09550278c75839A2E4bc0A2848e3eB0`](https://explorer.testnet.whitechain.io/address/0x6E64d396F09550278c75839A2E4bc0A2848e3eB0) | On-chain enrollment record + fresh-nonce / TTL access policy |
+| `PaymentProcessor` | [`0x8254525bFD51B0f13B5CE171DEbe11b6b70d34FE`](https://explorer.testnet.whitechain.io/address/0x8254525bFD51B0f13B5CE171DEbe11b6b70d34FE) | Receives WBT, forwards to merchant, mints PWSR reward |
+| `ICrossChainRewards` | — (interface) | Stub for future cross-chain PWSR bridging |
 
 All contracts target Solidity `0.8.30`, EVM version `prague`. Verified on [Blockscout](https://explorer.testnet.whitechain.io).
 
@@ -207,7 +207,7 @@ All contracts target Solidity `0.8.30`, EVM version `prague`. Verified on [Block
 
 ## Known Limitations
 
-- **Face recognition is mocked in dev** — hash-based embeddings, not real biometric matching. Replace `face_service.py` with InsightFace for production.
+- **Face recognition** — real ArcFace (InsightFace `buffalo_l`) embeddings with cosine-distance matching. First run downloads the ~280MB model to `~/.insightface`.
 - **No liveness / anti-spoofing** — a photo can spoof the terminal. Production requires a 3D/IR sensor or liveness challenge.
 - **Custodial model** — the backend holds customer private keys. This is a hackathon tradeoff; production should migrate to embedded non-custodial wallets or ERC-4337 smart accounts.
 - **WBT only** — ERC-20 stablecoin support (USDC/USDT) is not in MVP.
