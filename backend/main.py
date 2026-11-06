@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from config import settings
 from db import create_db_and_tables
@@ -10,6 +11,7 @@ from api.face import router as face_router
 from api.wallet import router as wallet_router
 from api.payment import router as payment_router
 from api.policy import router as policy_router
+from services.face_service import FaceError
 
 
 @asynccontextmanager
@@ -37,6 +39,12 @@ app.include_router(face_router,    prefix="/api/face",    tags=["face"])
 app.include_router(wallet_router,  prefix="/api/wallet",  tags=["wallet"])
 app.include_router(payment_router, prefix="/api/payment", tags=["payment"])
 app.include_router(policy_router,  prefix="/api/policy",  tags=["policy"])
+
+
+@app.exception_handler(FaceError)
+async def face_error_handler(request: Request, exc: FaceError):
+    """Return a clean 422 with a user-facing message instead of a 500 crash."""
+    return JSONResponse(status_code=422, content={"detail": str(exc)})
 
 
 @app.get("/health")

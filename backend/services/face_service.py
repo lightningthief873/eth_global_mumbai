@@ -16,6 +16,10 @@ DTYPE = np.float32
 _app = None
 
 
+class FaceError(ValueError):
+    """Raised when an image has no usable face (bad decode or no detection)."""
+
+
 def _model():
     """Lazily load the InsightFace analysis pipeline (detection + recognition)."""
     global _app
@@ -38,11 +42,11 @@ def embed(image_bytes: bytes) -> np.ndarray:
     arr = np.frombuffer(image_bytes, dtype=np.uint8)
     img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
     if img is None:
-        raise ValueError("Could not decode image")
+        raise FaceError("Could not read the image. Please try again.")
 
     faces = _model().get(img)
     if not faces:
-        raise ValueError("No face detected")
+        raise FaceError("No face detected. Center your face in the frame and try again.")
 
     # Largest detected face wins (closest to the camera).
     faces.sort(key=lambda f: (f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]), reverse=True)
