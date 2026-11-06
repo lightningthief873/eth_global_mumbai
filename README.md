@@ -197,6 +197,22 @@ All contracts target Solidity `0.8.30`, EVM version `prague`. Verified on [Block
 | Explorer | [explorer.testnet.whitechain.io](https://explorer.testnet.whitechain.io) | [explorer.whitechain.io](https://explorer.whitechain.io) |
 | Faucet | [faucet.testnet.whitechain.io](https://faucet.testnet.whitechain.io) | — |
 
+
+---
+
+## Relayer wallet (fund this)
+
+The relayer is the sponsor EOA that pays gas, tops up each new custodial wallet, and
+writes enrollment commitments on-chain. Keep it funded with test WBT or enrollments and
+payments will fail.
+
+| | |
+| --- | --- |
+| Address | [`0x302478941faCdb2c9Dbb412B60e35354F0AF0027`](https://explorer.testnet.whitechain.io/address/0x302478941faCdb2c9Dbb412B60e35354F0AF0027) |
+| Fund at | [faucet.testnet.whitechain.io](https://faucet.testnet.whitechain.io) |
+| Cost per enrollment | ~0.05 WBT (gas buffer funded into the new custodial wallet) |
+
+> Public address only — the private key lives solely in `backend/.env` (git-ignored) and is never committed.
 ---
 
 ## Known Limitations

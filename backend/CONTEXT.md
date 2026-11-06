@@ -77,12 +77,17 @@ WC_RPC_URL=https://rpc.testnet.whitechain.io
 WC_CHAIN_ID=1874
 RELAYER_PRIVATE_KEY=0x...          # sponsor EOA, pays gas (throwaway testnet key)
 WALLET_ENCRYPTION_KEY=...          # AES key for custodial key + template encryption
-PWSR_TOKEN_ADDRESS=0x...
-BIOMETRIC_REGISTRY_ADDRESS=0x...
-PAYMENT_PROCESSOR_ADDRESS=0x...
+PWSR_TOKEN_ADDRESS=0xE5C32424F213F8727057e936Fa0381675161947C
+BIOMETRIC_REGISTRY_ADDRESS=0x6E64d396F09550278c75839A2E4bc0A2848e3eB0
+PAYMENT_PROCESSOR_ADDRESS=0x8254525bFD51B0f13B5CE171DEbe11b6b70d34FE
 DATABASE_URL=sqlite:///./facepay.db
-FACE_MATCH_THRESHOLD=0.35          # cosine distance cutoff (tune per engine)
+FACE_MATCH_THRESHOLD=0.8           # ArcFace cosine distance cutoff
+GAS_BUFFER_WBT=0.05                # WBT funded into each new custodial wallet
 ```
+
+Relayer (sponsor) address to keep funded: **`0x302478941faCdb2c9Dbb412B60e35354F0AF0027`**
+(fund at [faucet.testnet.whitechain.io](https://faucet.testnet.whitechain.io); ~0.05 WBT per enrollment).
+The matching private key lives only in `backend/.env`.
 
 ## Security notes
 
