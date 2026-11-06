@@ -75,7 +75,7 @@ export default function CameraCapture({ onCapture, label = "Capture" }: Props) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt="Capture preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         ) : (
-          <video ref={videoRef} autoPlay playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <video ref={videoRef} autoPlay playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }} />
         )}
 
         {/* scanline + readout only while the live feed is active */}
