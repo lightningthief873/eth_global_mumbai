@@ -8,7 +8,9 @@ export async function startCamera(videoEl: HTMLVideoElement): Promise<MediaStrea
     video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
   });
   videoEl.srcObject = stream;
-  await videoEl.play();
+  // play() can reject with AbortError when the element is torn down mid-start;
+  // that is harmless — the stream is still attached and usable.
+  await videoEl.play().catch(() => {});
   return stream;
 }
 

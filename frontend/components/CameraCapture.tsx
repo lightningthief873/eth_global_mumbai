@@ -16,17 +16,32 @@ export default function CameraCapture({ onCapture, label = "Capture" }: Props) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    let s: MediaStream;
+    let cancelled = false;
+    let local: MediaStream | null = null;
     (async () => {
       try {
         if (!videoRef.current) return;
-        s = await startCamera(videoRef.current);
+        const s = await startCamera(videoRef.current);
+        local = s;
+        if (cancelled) {
+          stopCamera(s); // a newer mount superseded this run
+          return;
+        }
         setStream(s);
-      } catch {
+        setError(null);
+      } catch (e) {
+        // Ignore failures from a run that was torn down (StrictMode double-mount)
+        // and benign play() interruptions; only surface a real access failure.
+        if (cancelled) return;
+        const name = e instanceof DOMException ? e.name : "";
+        if (name === "AbortError") return;
         setError("Camera access denied. Grant permission or upload a file below.");
       }
     })();
-    return () => stopCamera(s ?? null);
+    return () => {
+      cancelled = true;
+      stopCamera(local);
+    };
   }, []);
 
   async function capture() {
