@@ -67,25 +67,43 @@ export default function UserPage() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <main className="flex flex-col items-center px-4 py-10 flex-1">
-        <div style={{ width: "100%", maxWidth: "580px" }} className="flex flex-col gap-6">
-
+      <main className="flex flex-col items-center px-5 py-12 md:py-16 flex-1">
+        <div style={{ width: "100%", maxWidth: "600px" }} className="flex flex-col gap-7">
           {/* Title */}
-          <div>
-            <h1 style={{ fontWeight: 800, fontSize: "1.75rem", letterSpacing: "-0.02em" }}>My dashboard</h1>
-            <p style={{ color: "var(--fp-muted)", fontSize: "0.9rem", marginTop: "0.3rem" }}>
-              Identify by face or enter your wallet address.
+          <div className="flex flex-col gap-3">
+            <span className="fp-eyebrow">Customer</span>
+            <h1 className="fp-display" style={{ fontSize: "clamp(2rem, 6vw, 2.8rem)" }}>
+              Your <span className="fp-serif-italic" style={{ color: "var(--fp-accent)" }}>dashboard.</span>
+            </h1>
+            <p style={{ color: "var(--fp-muted)", fontSize: "0.92rem" }}>
+              Identify by face, or look up any wallet address.
             </p>
           </div>
 
-          {/* Identity selector — only when no address loaded */}
+          {/* Identity selector */}
           {!address && mode === "idle" && (
-            <div className="flex flex-col gap-3">
-              <button className="fp-btn fp-btn-primary" style={{ width: "100%" }} onClick={() => setMode("face")}>
-                👤 Identify by face
+            <div className="grid gap-3" style={{ gridTemplateColumns: "1fr 1fr" }}>
+              <button
+                className="fp-card flex flex-col items-start gap-2 text-left transition-colors"
+                style={{ cursor: "pointer" }}
+                onClick={() => setMode("face")}
+              >
+                <span className="fp-badge fp-badge-info">Face</span>
+                <span style={{ fontWeight: 650, fontSize: "1.05rem" }}>Identify by face</span>
+                <span style={{ color: "var(--fp-muted)", fontSize: "0.82rem", lineHeight: 1.55 }}>
+                  Look at the camera to pull up your wallet.
+                </span>
               </button>
-              <button className="fp-btn fp-btn-ghost" style={{ width: "100%" }} onClick={() => setMode("address")}>
-                🔑 Enter wallet address
+              <button
+                className="fp-card flex flex-col items-start gap-2 text-left transition-colors"
+                style={{ cursor: "pointer" }}
+                onClick={() => setMode("address")}
+              >
+                <span className="fp-badge fp-badge-info">Address</span>
+                <span style={{ fontWeight: 650, fontSize: "1.05rem" }}>Enter wallet</span>
+                <span style={{ color: "var(--fp-muted)", fontSize: "0.82rem", lineHeight: 1.55 }}>
+                  Paste a 0x address to view balances.
+                </span>
               </button>
             </div>
           )}
@@ -93,7 +111,7 @@ export default function UserPage() {
           {/* Face identify */}
           {mode === "face" && (
             <div className="fp-card flex flex-col gap-4">
-              <p style={{ fontWeight: 600 }}>Look at the camera</p>
+              <p style={{ fontWeight: 650 }}>Look at the camera</p>
               <CameraCapture label="Identify me" onCapture={(blob) => identifyByFace(blob)} />
               <button className="fp-btn fp-btn-ghost" onClick={() => setMode("idle")}>← Cancel</button>
             </div>
@@ -101,10 +119,11 @@ export default function UserPage() {
 
           {/* Address identify */}
           {mode === "address" && (
-            <div className="fp-card flex flex-col gap-3">
-              <p style={{ fontWeight: 600 }}>Enter wallet address</p>
+            <div className="fp-card flex flex-col gap-4">
+              <p style={{ fontWeight: 650 }}>Enter wallet address</p>
               <input
                 className="fp-input"
+                style={{ fontFamily: "var(--font-mono)", fontSize: "0.85rem" }}
                 placeholder="0x…"
                 value={inputAddress}
                 onChange={(e) => setInputAddress(e.target.value)}
@@ -125,17 +144,18 @@ export default function UserPage() {
 
           {/* Loading */}
           {loading && (
-            <div className="fp-card flex items-center justify-center gap-3 py-8">
-              <div style={{ width: "1.5rem", height: "1.5rem", border: "2px solid var(--fp-border)", borderTopColor: "var(--fp-accent)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-              <span style={{ color: "var(--fp-muted)" }}>Loading…</span>
-              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <div className="fp-card flex items-center justify-center gap-3 py-10">
+              <div className="fp-spinner" style={{ width: "1.5rem", height: "1.5rem" }} />
+              <span className="fp-mono" style={{ fontSize: "0.76rem", letterSpacing: "0.1em", color: "var(--fp-muted)" }}>
+                LOADING…
+              </span>
             </div>
           )}
 
           {/* Error */}
           {error && (
-            <div className="fp-card" style={{ borderColor: "var(--fp-error)" }}>
-              <p style={{ color: "var(--fp-error)", fontWeight: 600, marginBottom: "0.4rem" }}>Error</p>
+            <div className="fp-card" style={{ borderColor: "color-mix(in srgb, var(--fp-error) 50%, var(--fp-border))" }}>
+              <p style={{ color: "var(--fp-error)", fontWeight: 650, marginBottom: "0.4rem" }}>Error</p>
               <p style={{ color: "var(--fp-muted)", fontSize: "0.85rem", marginBottom: "0.75rem" }}>{error}</p>
               <button className="fp-btn fp-btn-ghost" onClick={reset}>Reset</button>
             </div>
@@ -143,63 +163,51 @@ export default function UserPage() {
 
           {/* Dashboard */}
           {address && balance && !loading && (
-            <div className="flex flex-col gap-5">
-              {/* Enrollment badge */}
-              <div className="flex items-center justify-between">
-                <span style={{ color: "var(--fp-muted)", fontSize: "0.82rem" }}>
-                  <a href={addressUrl(address)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--fp-accent)" }}>
-                    {address.slice(0, 10)}…{address.slice(-8)}
-                  </a>
-                </span>
+            <div className="flex flex-col gap-5 fp-rise">
+              {/* Identity row */}
+              <div className="flex items-center justify-between gap-3">
+                <a href={addressUrl(address)} target="_blank" rel="noopener noreferrer" className="fp-mono fp-link" style={{ fontSize: "0.78rem" }}>
+                  {address.slice(0, 12)}…{address.slice(-8)}
+                </a>
                 <span className={`fp-badge ${enrolled ? "fp-badge-success" : "fp-badge-error"}`}>
-                  {enrolled ? "✓ Enrolled" : "✗ Not enrolled"}
+                  {enrolled ? "Enrolled" : "Not enrolled"}
                 </span>
               </div>
 
-              {/* Balances */}
               <BalanceCard balance={balance} />
 
               {/* History */}
-              <div className="fp-card flex flex-col gap-3">
-                <p style={{ fontWeight: 700, fontSize: "0.95rem" }}>Payment history</p>
+              <div className="fp-card flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <p style={{ fontWeight: 650, fontSize: "0.98rem" }}>Payment history</p>
+                  <span className="fp-mono" style={{ fontSize: "0.68rem", color: "var(--fp-muted)" }}>
+                    {history.length} TX
+                  </span>
+                </div>
 
                 {history.length === 0 ? (
                   <p style={{ color: "var(--fp-muted)", fontSize: "0.85rem" }}>No payments yet.</p>
                 ) : (
-                  <div className="flex flex-col gap-2">
-                    {history.map((p) => (
+                  <div className="flex flex-col">
+                    {history.map((p, i) => (
                       <div
                         key={p.id}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          background: "var(--fp-surface-2)",
-                          borderRadius: "8px",
-                          padding: "0.65rem 0.875rem",
-                          gap: "0.5rem",
-                        }}
+                        className="flex items-center justify-between gap-3 py-3"
+                        style={{ borderTop: i === 0 ? "none" : "1px solid var(--fp-border-soft)" }}
                       >
                         <div className="flex flex-col gap-0.5" style={{ minWidth: 0 }}>
-                          <span className="fp-mono" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <span className="fp-mono" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--foreground)" }}>
                             → {p.merchant.slice(0, 10)}…{p.merchant.slice(-6)}
                           </span>
-                          <span style={{ color: "var(--fp-muted)", fontSize: "0.72rem" }}>
+                          <span className="fp-mono" style={{ fontSize: "0.66rem" }}>
                             {new Date(p.created_at).toLocaleString()}
                           </span>
                         </div>
-                        <div className="flex flex-col items-end gap-0.5" style={{ flexShrink: 0 }}>
-                          <span style={{ fontWeight: 700 }}>{p.amount_wbt} WBT</span>
-                          <span style={{ color: "var(--fp-accent)", fontSize: "0.78rem" }}>+{p.pwsr} PWSR</span>
+                        <div className="flex flex-col items-end gap-0.5 shrink-0">
+                          <span style={{ fontWeight: 650 }}>{p.amount_wbt} WBT</span>
+                          <span className="fp-mono" style={{ color: "var(--fp-accent)", fontSize: "0.72rem" }}>+{p.pwsr} PWSR</span>
                         </div>
-                        <a
-                          href={p.explorer_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ color: "var(--fp-accent)", fontSize: "0.78rem", flexShrink: 0 }}
-                        >
-                          ↗
-                        </a>
+                        <a href={p.explorer_url} target="_blank" rel="noopener noreferrer" className="fp-link shrink-0" style={{ fontSize: "0.85rem" }}>↗</a>
                       </div>
                     ))}
                   </div>
