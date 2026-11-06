@@ -1,0 +1,11 @@
+{
+  "network": "whitechain-sepolia",
+  "chainId": 1874,
+  "deployer": "0x302478941faCdb2c9Dbb412B60e35354F0AF0027",
+  "rewardRate": "100000000000000000000",
+  "contracts": {
+    "PWSRToken": "0xE5C32424F213F8727057e936Fa0381675161947C",
+    "PaymentProcessor": "0x8254525bFD51B0f13B5CE171DEbe11b6b70d34FE",
+    "BiometricRegistry": "0x6E64d396F09550278c75839A2E4bc0A2848e3eB0"
+  }
+}
