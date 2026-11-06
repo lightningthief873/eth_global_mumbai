@@ -107,7 +107,11 @@ export default function EnrollPage() {
           {/* Step: capture / confirm */}
           {(step === "capture" || step === "confirm") && (
             <div className="flex flex-col gap-4">
-              <CameraCapture onCapture={onCapture} label="Capture face" />
+              <CameraCapture
+                onCapture={onCapture}
+                onRetake={() => { setStep("capture"); setCapturedBlob(null); setPreview(null); }}
+                label="Capture face"
+              />
 
               {step === "confirm" && preview && (
                 <div className="fp-card flex flex-col gap-4">
@@ -122,12 +126,9 @@ export default function EnrollPage() {
                       onChange={(e) => setAlias(e.target.value)}
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <button className="fp-btn fp-btn-ghost" style={{ flex: 1 }} onClick={reset}>← Retake</button>
-                    <button className="fp-btn fp-btn-primary" style={{ flex: 2 }} onClick={enroll}>
-                      Enroll my face
-                    </button>
-                  </div>
+                  <button className="fp-btn fp-btn-primary" onClick={enroll}>
+                    Enroll my face
+                  </button>
                 </div>
               )}
             </div>

@@ -5,10 +5,11 @@ import { startCamera, stopCamera, captureFrame, blobToDataUrl } from "@/lib/came
 
 interface Props {
   onCapture: (blob: Blob, preview: string) => void;
+  onRetake?: () => void;
   label?: string;
 }
 
-export default function CameraCapture({ onCapture, label = "Capture" }: Props) {
+export default function CameraCapture({ onCapture, onRetake, label = "Capture" }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -62,6 +63,8 @@ export default function CameraCapture({ onCapture, label = "Capture" }: Props) {
   function retake() {
     setPreview(null);
     setError(null);
+    videoRef.current?.play().catch(() => {});
+    onRetake?.();
   }
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -86,11 +89,10 @@ export default function CameraCapture({ onCapture, label = "Capture" }: Props) {
           aspectRatio: "4/3",
         }}
       >
-        {preview ? (
+        <video ref={videoRef} autoPlay playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }} />
+        {preview && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="Capture preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        ) : (
-          <video ref={videoRef} autoPlay playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }} />
+          <img src={preview} alt="Capture preview" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
         )}
 
         {/* live readout only while the feed is active */}
