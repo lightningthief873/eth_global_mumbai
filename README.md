@@ -15,6 +15,53 @@ FacePay lets a customer enroll their face once and pay at any merchant terminal 
 
 ---
 
+## Why Whitechain
+
+FacePay is a point-of-sale product: someone stands at a terminal and wants to pay in the
+time it takes to tap a card. That single constraint drove the chain choice, and
+Whitechain fit it better than a generic L1 or L2 for a hackathon build.
+
+**Why it's the right chain for this product**
+
+- **One-second confirmations.** Whitechain's ~1s block time means a face scan resolves to
+  a settled payment while the customer is still looking at the camera. On most L1s a
+  checkout would stall for 12s+; that kills the PoS experience.
+- **Cheap, predictable fees.** As an OP Stack L2 (5 gwei floor), a coffee-sized micro-payment
+  costs a fraction of a cent to settle. Our whole model — the relayer sponsoring gas for
+  every customer — is only viable because fees are this low.
+- **WBT as the native gas token.** Payment value *and* gas are the same asset. That let us
+  keep the custodial + relayer model dead simple: fund a wallet once in WBT and it can both
+  pay merchants and cover its own gas — no separate gas token to manage.
+- **Merchant-first "Onchain Economy Layer."** Whitechain targets businesses transacting
+  on-chain, which is exactly FacePay's audience: merchants accepting biometric payments.
+- **Ethereum settlement.** Payments finalize to Ethereum, so merchants get L1-grade
+  security without L1 latency or cost.
+
+**Why it was fast to build on (hackathon reality)**
+
+- **Full EVM compatibility (Prague).** We reused the mature Ethereum toolchain end to end —
+  Foundry + OpenZeppelin for contracts, `web3.py` on the backend, `viem` on the frontend —
+  instead of learning a bespoke VM. Three contracts went from zero to deployed-and-verified
+  in one sitting.
+- **Public RPC + faucet, no gatekeeping.** `rpc.testnet.whitechain.io` needs no API key, and
+  the faucet funded our relayer instantly — zero setup friction during a time-boxed build.
+- **Blockscout verification.** Every contract is source-verified, so judges can read the code
+  and trace each payment's `Paid` event directly on the explorer. Every receipt in the app
+  links straight to the on-chain transaction.
+- **Standard predeploys.** Multicall3 at the canonical address let the frontend batch reads
+  against the rate-limited public RPC with no extra infra.
+
+**How we used it concretely**
+
+- Deployed `PWSRToken`, `BiometricRegistry`, and `PaymentProcessor` (Solidity 0.8.30,
+  `evm_version = prague`) to **Whitechain Sepolia (chain ID 1874)**, verified on Blockscout.
+- Every payment is a real `PaymentProcessor.charge{value}` transaction: native **WBT** moves
+  customer → merchant and **PWSR** rewards are minted in the same call.
+- The backend signs with `web3.py` using **EIP-1559 fees that respect the 5 gwei base-fee
+  floor**, and a relayer EOA (funded in WBT) sponsors gas for every custodial wallet.
+
+---
+
 ## Features
 
 - **Face Enrollment** — capture once, pay anywhere; biometric embedding AES-GCM encrypted at rest.
