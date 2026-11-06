@@ -1,6 +1,6 @@
 """
 Payment orchestration service.
-Ties together face recognition → wallet → chain → DB persistence.
+Ties together face recognition -> custodial wallet -> Whitechain -> DB persistence.
 """
 
 from decimal import Decimal
@@ -9,10 +9,11 @@ from sqlmodel import Session, select
 
 from models import Enrollment, Payment
 from config import settings
-from services import face_service, chain_service
+from services import face_service, chain_service, wallet_service
 from services.crypto_service import decrypt, encrypt, commitment
 
-REWARD_RATE = 100  # PWSR per 1 WBT (both 18-dec)
+# PWSR minted per 1 WBT, matching PaymentProcessor.rewardRate (100e18).
+REWARD_RATE = 100
 
 
 def wbt_to_wei(wbt: str | float) -> int:
@@ -20,6 +21,7 @@ def wbt_to_wei(wbt: str | float) -> int:
 
 
 def calc_pwsr_reward(amount_wei: int) -> int:
+    """Mirror of the on-chain formula: amount * rewardRate / 1e18."""
     return amount_wei * REWARD_RATE
 
 
@@ -28,12 +30,8 @@ def _load_candidates(session: Session) -> list[tuple[str, "face_service.np.ndarr
     candidates = []
     for enr in enrollments:
         try:
-            raw = decrypt(
-                bytes.fromhex(enr.enc_embedding_hex),
-                bytes.fromhex(enr.iv_hex),
-            )
-            emb = face_service.hex_to_embedding(raw.hex())
-            candidates.append((enr.customer_address, emb))
+            raw = decrypt(bytes.fromhex(enr.enc_embedding_hex), bytes.fromhex(enr.iv_hex))
+            candidates.append((enr.customer_address, face_service.hex_to_embedding(raw.hex())))
         except Exception:
             continue
     return candidates
@@ -45,7 +43,11 @@ def recognize(image_bytes: bytes, session: Session) -> tuple[str, float] | None:
     return face_service.match(query, candidates, settings.face_match_threshold)
 
 
-def enroll(image_bytes: bytes, address: str, session: Session) -> str:
+def enroll(image_bytes: bytes, address: str, session: Session) -> tuple[str, str]:
+    """
+    Compute embedding, encrypt + store it, record the commitment on-chain.
+    Returns (commitment_hex, registry_tx_hash).
+    """
     emb = face_service.embed(image_bytes)
     emb_bytes = bytes.fromhex(face_service.embedding_to_hex(emb))
     enc, iv = encrypt(emb_bytes)
@@ -65,17 +67,19 @@ def enroll(image_bytes: bytes, address: str, session: Session) -> str:
         commitment=comm,
     ))
     session.commit()
-    return comm
+
+    tx_hash = chain_service.enroll_on_chain(address, comm)
+    return comm, tx_hash
 
 
-def charge(
-    customer_address: str,
-    merchant_address: str,
-    amount_wei: int,
-    session: Session,
-) -> dict:
+def charge(customer_address: str, merchant_address: str, amount_wei: int, session: Session) -> dict:
+    """
+    Execute a real payment: the customer custodial wallet signs
+    PaymentProcessor.charge{value}, forwarding WBT to the merchant and minting PWSR.
+    """
+    signer = wallet_service.load_signer(customer_address, session)
+    tx_hash = chain_service.charge_on_chain(signer, merchant_address, amount_wei)
     pwsr_wei = calc_pwsr_reward(amount_wei)
-    tx_hash = chain_service.send_wbt_payment(customer_address, merchant_address, amount_wei)
 
     payment = Payment(
         customer_address=customer_address,
