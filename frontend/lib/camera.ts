@@ -25,6 +25,9 @@ export function captureFrame(videoEl: HTMLVideoElement): Promise<Blob> {
   canvas.height = videoEl.videoHeight || 480;
   const ctx = canvas.getContext("2d");
   if (!ctx) { reject(new Error("Canvas context unavailable")); return promise; }
+  // Mirror horizontally so the capture matches the mirrored live preview.
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
   ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
   canvas.toBlob(
     (blob) => { blob ? resolve(blob) : reject(new Error("Failed to capture frame")); },
