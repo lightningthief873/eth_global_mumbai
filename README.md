@@ -66,6 +66,7 @@ settled through `PaymentHub`:
 
 | Action | Amount | Explorer |
 | --- | --- | --- |
+| Invoice paid in USDT (`PaymentHub`) | 1.00 USDT | [`0x200f32…f2e57`](https://explorer.testnet.whitechain.io/tx/0x200f32af5efebfd9f8a155b4078576b2be30a9020822aa610e52cbb7266f2e57) |
 | Invoice paid **by face** | 2.00 USDT | [`0x86e215…c2fb2`](https://explorer.testnet.whitechain.io/tx/0x86e215e720ec541c1885bebc05690ddbe88029f786d49279add531791e7c2fb2) |
 | One-click partial refund | 0.50 USDT | [`0x9c7bc5…0cc9c0`](https://explorer.testnet.whitechain.io/tx/0x9c7bc55f5fa7a119fd1f2a5ba15b710cb4e0baf611e0b0ea0abc1cfd580cc9c0) |
 
