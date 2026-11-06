@@ -1,13 +1,23 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "FacePay backend API — face biometric payment protocol on Whitechain"
 readme = "README.md"
 authors = [
-    { name = "Soham Ghugare", email = "soham.ghugare@gmail.com" }
+    { name = "Atharav Jadhav", email = "atharav.jadhav873@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic-settings>=2.0.0",
+    "python-multipart>=0.0.9",
+    "web3>=7.0.0",
+    "eth-account>=0.13.0",
+    "sqlmodel>=0.0.21",
+    "cryptography>=43.0.0",
+    "numpy>=2.0.0",
+]
 
 [project.scripts]
 backend = "backend:main"
