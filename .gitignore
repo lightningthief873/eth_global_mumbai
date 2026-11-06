@@ -1,0 +1,39 @@
+# Planning workspace (local only)
+plans/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+keystore/
+wallets/
+
+# Python / backend
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.uv/
+*.sqlite
+*.sqlite3
+*.db
+
+# Node / frontend
+node_modules/
+.next/
+out/
+dist/
+
+# Foundry / contracts
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+!contracts/broadcast/**/run-latest.json
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
