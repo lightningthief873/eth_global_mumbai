@@ -5,43 +5,57 @@ interface Props {
   onReset?: () => void;
 }
 
+function CheckMark() {
+  return (
+    <span
+      className="flex items-center justify-center shrink-0"
+      style={{
+        width: "2.4rem",
+        height: "2.4rem",
+        borderRadius: "999px",
+        background: "color-mix(in srgb, var(--fp-accent) 16%, transparent)",
+        border: "1.5px solid var(--fp-accent)",
+      }}
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M5 13l4 4L19 7" stroke="var(--fp-accent)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  );
+}
 
 export default function TxReceipt({ receipt, onReset }: Props) {
   return (
-    <div className="fp-card flex flex-col gap-4">
+    <div className="fp-card flex flex-col gap-5 fp-rise">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <span style={{ fontSize: "1.5rem" }}>✅</span>
+      <div className="flex items-center gap-3">
+        <CheckMark />
         <div>
-          <p style={{ fontWeight: 700, fontSize: "1rem" }}>Payment confirmed</p>
-          <p style={{ color: "var(--fp-muted)", fontSize: "0.8rem" }}>Transaction recorded on Whitechain</p>
+          <p className="fp-display" style={{ fontSize: "1.3rem" }}>Payment confirmed</p>
+          <p className="fp-mono" style={{ fontSize: "0.72rem", marginTop: "0.15rem" }}>SETTLED ON WHITECHAIN</p>
         </div>
       </div>
 
       {/* Amounts */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "0.75rem",
-        }}
-      >
-        <div style={{ background: "var(--fp-surface-2)", borderRadius: "8px", padding: "0.75rem" }}>
-          <p style={{ color: "var(--fp-muted)", fontSize: "0.75rem", marginBottom: "0.25rem" }}>WBT paid</p>
-          <p style={{ fontWeight: 700, fontSize: "1.1rem" }}>{(Number(BigInt(receipt.amount_wei)) / 1e18).toFixed(6)}</p>
-          <p style={{ color: "var(--fp-muted)", fontSize: "0.72rem" }}>WBT</p>
-        </div>
-        <div style={{ background: "var(--fp-surface-2)", borderRadius: "8px", padding: "0.75rem" }}>
-          <p style={{ color: "var(--fp-muted)", fontSize: "0.75rem", marginBottom: "0.25rem" }}>PWSR earned</p>
-          <p style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--fp-accent)" }}>
-            {(Number(BigInt(receipt.pwsr_wei)) / 1e18).toFixed(6)}
+      <div className="grid gap-3" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <div className="fp-panel" style={{ padding: "1rem" }}>
+          <p className="fp-label" style={{ marginBottom: "0.45rem" }}>WBT paid</p>
+          <p className="fp-display" style={{ fontSize: "1.5rem", lineHeight: 1 }}>
+            {(Number(BigInt(receipt.amount_wei)) / 1e18).toFixed(6)}
           </p>
-          <p style={{ color: "var(--fp-muted)", fontSize: "0.72rem" }}>PWSR</p>
+          <p className="fp-mono" style={{ fontSize: "0.66rem", marginTop: "0.35rem" }}>WBT</p>
+        </div>
+        <div className="fp-panel" style={{ padding: "1rem" }}>
+          <p className="fp-label" style={{ marginBottom: "0.45rem", color: "var(--fp-accent-dim)" }}>PWSR earned</p>
+          <p className="fp-display" style={{ fontSize: "1.5rem", lineHeight: 1, color: "var(--fp-accent)" }}>
+            +{(Number(BigInt(receipt.pwsr_wei)) / 1e18).toFixed(6)}
+          </p>
+          <p className="fp-mono" style={{ fontSize: "0.66rem", marginTop: "0.35rem" }}>PWSR</p>
         </div>
       </div>
 
       {/* Addresses */}
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-3">
         <div>
           <span className="fp-label">Customer</span>
           <p className="fp-mono">{receipt.customer}</p>
@@ -57,21 +71,13 @@ export default function TxReceipt({ receipt, onReset }: Props) {
         href={receipt.explorer_url}
         target="_blank"
         rel="noopener noreferrer"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          background: "var(--fp-surface-2)",
-          borderRadius: "8px",
-          padding: "0.65rem 0.875rem",
-          textDecoration: "none",
-          border: "1px solid var(--fp-border)",
-        }}
+        className="fp-panel flex items-center justify-between"
+        style={{ padding: "0.75rem 0.95rem", textDecoration: "none" }}
       >
-        <span style={{ fontFamily: "var(--font-geist-mono)", fontSize: "0.75rem", color: "var(--fp-muted)" }}>
-          {receipt.tx_hash.slice(0, 18)}…{receipt.tx_hash.slice(-8)}
+        <span className="fp-mono" style={{ fontSize: "0.74rem" }}>
+          {receipt.tx_hash.slice(0, 20)}…{receipt.tx_hash.slice(-8)}
         </span>
-        <span style={{ color: "var(--fp-accent)", fontSize: "0.8rem" }}>View ↗</span>
+        <span className="fp-link" style={{ fontSize: "0.8rem", fontWeight: 600 }}>View ↗</span>
       </a>
 
       {onReset && (

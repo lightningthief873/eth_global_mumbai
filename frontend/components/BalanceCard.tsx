@@ -7,48 +7,40 @@ interface Props {
 
 export default function BalanceCard({ balance }: Props) {
   return (
-    <div className="fp-card flex flex-col gap-4">
+    <div className="fp-card flex flex-col gap-5">
       {/* Address */}
       <div>
-        <span className="fp-label">Wallet address</span>
+        <span className="fp-label">Custodial wallet</span>
         <a
           href={addressUrl(balance.address)}
           target="_blank"
           rel="noopener noreferrer"
-          className="fp-mono"
-          style={{ color: "var(--fp-accent)", textDecoration: "none" }}
+          className="fp-mono fp-link"
         >
           {balance.address}
         </a>
       </div>
 
       {/* Balances */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-        <div
-          style={{
-            background: "var(--fp-surface-2)",
-            borderRadius: "10px",
-            padding: "1rem",
-            border: "1px solid var(--fp-border)",
-          }}
-        >
-          <p style={{ color: "var(--fp-muted)", fontSize: "0.75rem", marginBottom: "0.4rem" }}>WBT Balance</p>
-          <p style={{ fontWeight: 700, fontSize: "1.4rem" }}>{Number(balance.wbt).toFixed(4)}</p>
-          <p style={{ color: "var(--fp-muted)", fontSize: "0.72rem" }}>WBT · Whitechain</p>
+      <div className="grid gap-3" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <div className="fp-panel" style={{ padding: "1.1rem" }}>
+          <p className="fp-label" style={{ marginBottom: "0.6rem" }}>WBT balance</p>
+          <p className="fp-display" style={{ fontSize: "2rem", lineHeight: 1 }}>{Number(balance.wbt).toFixed(4)}</p>
+          <p className="fp-mono" style={{ fontSize: "0.68rem", marginTop: "0.4rem" }}>WBT · WHITECHAIN</p>
         </div>
         <div
+          className="fp-panel"
           style={{
-            background: "color-mix(in srgb, var(--fp-accent) 8%, var(--fp-surface-2))",
-            borderRadius: "10px",
-            padding: "1rem",
-            border: "1px solid color-mix(in srgb, var(--fp-accent) 25%, var(--fp-border))",
+            padding: "1.1rem",
+            background: "color-mix(in srgb, var(--fp-accent) 7%, var(--fp-surface-2))",
+            borderColor: "color-mix(in srgb, var(--fp-accent) 28%, var(--fp-border))",
           }}
         >
-          <p style={{ color: "var(--fp-muted)", fontSize: "0.75rem", marginBottom: "0.4rem" }}>PWSR Rewards</p>
-          <p style={{ fontWeight: 700, fontSize: "1.4rem", color: "var(--fp-accent)" }}>
+          <p className="fp-label" style={{ marginBottom: "0.6rem", color: "var(--fp-accent-dim)" }}>PWSR rewards</p>
+          <p className="fp-display" style={{ fontSize: "2rem", lineHeight: 1, color: "var(--fp-accent)" }}>
             {Number(balance.pwsr).toFixed(2)}
           </p>
-          <p style={{ color: "var(--fp-muted)", fontSize: "0.72rem" }}>PWSR · loyalty token</p>
+          <p className="fp-mono" style={{ fontSize: "0.68rem", marginTop: "0.4rem" }}>PWSR · LOYALTY</p>
         </div>
       </div>
     </div>
