@@ -23,9 +23,24 @@ export default function DashboardPage() {
 
   useEffect(() => { if (merchant) refresh(); /* eslint-disable-next-line */ }, [merchant]);
 
+  function clearStaleMerchant() {
+    localStorage.removeItem("facepay_merchant");
+    setMerchant(null);
+    setInvoices([]);
+    setError("Your saved merchant account is no longer valid (the server was reset). Please create a new one.");
+  }
+
+  function isInvalidKey(e: unknown) {
+    return e instanceof Error && /invalid api key/i.test(e.message);
+  }
+
   async function refresh() {
     if (!merchant) return;
-    try { setInvoices(await checkout.listInvoices(merchant.api_key)); } catch {}
+    try {
+      setInvoices(await checkout.listInvoices(merchant.api_key));
+    } catch (e) {
+      if (isInvalidKey(e)) clearStaleMerchant();
+    }
   }
 
   async function onboard() {
@@ -47,7 +62,10 @@ export default function DashboardPage() {
       setLastLink(url);
       setAmount(""); setDesc("");
       await refresh();
-    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+    } catch (e) {
+      if (isInvalidKey(e)) clearStaleMerchant();
+      else setError(e instanceof Error ? e.message : String(e));
+    }
     finally { setBusy(false); }
   }
 
@@ -56,7 +74,10 @@ export default function DashboardPage() {
     const amt = full ? undefined : prompt(`Refund amount USDT (remaining ${remaining})`) ?? undefined;
     if (!full && !amt) return;
     try { await checkout.refund(merchant.api_key, id, amt); await refresh(); }
-    catch (e) { alert(e instanceof Error ? e.message : String(e)); }
+    catch (e) {
+      if (isInvalidKey(e)) clearStaleMerchant();
+      else alert(e instanceof Error ? e.message : String(e));
+    }
   }
 
   function logout() {
