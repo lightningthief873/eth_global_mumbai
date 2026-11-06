@@ -4,29 +4,41 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { href: "/", label: "Home" },
   { href: "/enroll", label: "Enroll" },
-  { href: "/merchant", label: "Merchant" },
+  { href: "/merchant", label: "Terminal" },
   { href: "/user", label: "Dashboard" },
 ];
 
 export default function Navbar() {
   const path = usePathname();
   return (
-    <nav
-      style={{ background: "var(--fp-surface)", borderBottom: "1px solid var(--fp-border)" }}
-      className="sticky top-0 z-50"
-    >
-      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+    <nav className="sticky top-0 z-40 backdrop-blur-md" style={{ background: "color-mix(in srgb, var(--fp-ink) 80%, transparent)", borderBottom: "1px solid var(--fp-border-soft)" }}>
+      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg tracking-tight">
+        <Link href="/" className="flex items-center gap-2.5 group">
           <span
-            style={{ background: "var(--fp-accent)", borderRadius: "6px" }}
-            className="w-7 h-7 flex items-center justify-center text-white text-sm font-black"
+            aria-hidden
+            className="relative flex items-center justify-center"
+            style={{
+              width: "2rem",
+              height: "2rem",
+              border: "1.5px solid var(--fp-accent)",
+              borderRadius: "9px",
+              background: "color-mix(in srgb, var(--fp-accent) 10%, transparent)",
+            }}
           >
-            F
+            <span
+              style={{
+                width: "0.6rem",
+                height: "0.6rem",
+                border: "1.5px solid var(--fp-accent)",
+                borderRadius: "999px",
+              }}
+            />
           </span>
-          <span>FacePay</span>
+          <span className="text-lg tracking-tight" style={{ fontWeight: 700, letterSpacing: "-0.02em" }}>
+            Face<span style={{ color: "var(--fp-accent)" }}>Pay</span>
+          </span>
         </Link>
 
         {/* Links */}
@@ -37,17 +49,30 @@ export default function Navbar() {
               <Link
                 key={href}
                 href={href}
+                className="relative px-3.5 py-2 transition-colors"
                 style={{
-                  color: active ? "var(--fp-accent)" : "var(--fp-muted)",
-                  background: active ? "color-mix(in srgb, var(--fp-accent) 10%, transparent)" : "transparent",
-                  borderRadius: "6px",
-                  padding: "0.3rem 0.75rem",
-                  fontSize: "0.875rem",
-                  fontWeight: active ? 600 : 400,
-                  transition: "all 0.15s",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.74rem",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: active ? "var(--foreground)" : "var(--fp-muted)",
                 }}
               >
                 {label}
+                <span
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    left: "0.875rem",
+                    right: "0.875rem",
+                    bottom: "0.35rem",
+                    height: "1.5px",
+                    background: "var(--fp-accent)",
+                    transformOrigin: "left",
+                    transform: active ? "scaleX(1)" : "scaleX(0)",
+                    transition: "transform 0.2s ease",
+                  }}
+                />
               </Link>
             );
           })}
