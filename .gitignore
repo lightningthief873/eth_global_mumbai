@@ -31,6 +31,7 @@ contracts/out/
 contracts/cache/
 contracts/broadcast/
 !contracts/broadcast/**/run-latest.json
+contracts/lib/
 
 # OS / editor
 .DS_Store
