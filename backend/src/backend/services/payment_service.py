@@ -1,0 +1,109 @@
+"""
+Payment orchestration service.
+Ties together face recognition → wallet → chain → DB persistence.
+"""
+
+from decimal import Decimal
+
+from sqlmodel import Session, select
+
+from ..models import Customer, Enrollment, Payment
+from ..config import settings
+from . import face_service, chain_service
+from .crypto_service import decrypt, encrypt, commitment
+
+# PWSR reward: 100 PWSR per 1 WBT (both 18-dec)
+REWARD_RATE = 100
+
+
+def wbt_to_wei(wbt: str | float) -> int:
+    return int(Decimal(str(wbt)) * Decimal(10**18))
+
+
+def calc_pwsr_reward(amount_wei: int) -> int:
+    return amount_wei * REWARD_RATE
+
+
+def _load_candidates(session: Session) -> list[tuple[str, "face_service.np.ndarray"]]:
+    enrollments = session.exec(select(Enrollment)).all()
+    candidates = []
+    for enr in enrollments:
+        try:
+            raw = decrypt(
+                bytes.fromhex(enr.enc_embedding_hex),
+                bytes.fromhex(enr.iv_hex),
+            )
+            emb = face_service.hex_to_embedding(raw.hex())
+            candidates.append((enr.customer_address, emb))
+        except Exception:
+            continue
+    return candidates
+
+
+def recognize(image_bytes: bytes, session: Session) -> tuple[str, float] | None:
+    """Return (address, distance) or None."""
+    query = face_service.embed(image_bytes)
+    candidates = _load_candidates(session)
+    return face_service.match(query, candidates, settings.face_match_threshold)
+
+
+def enroll(image_bytes: bytes, address: str, session: Session) -> str:
+    """
+    Compute embedding, encrypt, store Enrollment row, return commitment hex.
+    Does NOT create the wallet — caller is responsible.
+    """
+    emb = face_service.embed(image_bytes)
+    emb_bytes = bytes.fromhex(face_service.embedding_to_hex(emb))
+    enc, iv = encrypt(emb_bytes)
+    comm = commitment(emb_bytes)
+
+    # Remove old enrollment if re-enrolling
+    existing = session.exec(
+        select(Enrollment).where(Enrollment.customer_address == address)
+    ).first()
+    if existing:
+        session.delete(existing)
+        session.flush()
+
+    enr = Enrollment(
+        customer_address=address,
+        enc_embedding_hex=enc.hex(),
+        iv_hex=iv.hex(),
+        commitment=comm,
+    )
+    session.add(enr)
+    session.commit()
+    return comm
+
+
+def charge(
+    customer_address: str,
+    merchant_address: str,
+    amount_wei: int,
+    session: Session,
+) -> dict:
+    """
+    Execute a payment: (mock) on-chain WBT transfer + PWSR reward.
+    Returns receipt dict.
+    """
+    pwsr_wei = calc_pwsr_reward(amount_wei)
+    tx_hash = chain_service.send_wbt_payment(customer_address, merchant_address, amount_wei)
+
+    payment = Payment(
+        customer_address=customer_address,
+        merchant_address=merchant_address,
+        amount_wei=amount_wei,
+        pwsr_wei=pwsr_wei,
+        tx_hash=tx_hash,
+    )
+    session.add(payment)
+    session.commit()
+    session.refresh(payment)
+
+    return {
+        "tx_hash": tx_hash,
+        "amount_wei": amount_wei,
+        "pwsr_wei": pwsr_wei,
+        "customer": customer_address,
+        "merchant": merchant_address,
+    }
