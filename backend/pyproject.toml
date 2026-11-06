@@ -17,6 +17,9 @@ dependencies = [
     "sqlmodel>=0.0.21",
     "cryptography>=43.0.0",
     "numpy>=2.0.0",
+    "insightface>=2.1",
+    "onnxruntime>=1.31.1",
+    "opencv-python-headless>=5.0.0.93",
 ]
 
 [tool.uv]
