@@ -7,13 +7,12 @@ from decimal import Decimal
 
 from sqlmodel import Session, select
 
-from ..models import Customer, Enrollment, Payment
-from ..config import settings
-from . import face_service, chain_service
-from .crypto_service import decrypt, encrypt, commitment
+from models import Enrollment, Payment
+from config import settings
+from services import face_service, chain_service
+from services.crypto_service import decrypt, encrypt, commitment
 
-# PWSR reward: 100 PWSR per 1 WBT (both 18-dec)
-REWARD_RATE = 100
+REWARD_RATE = 100  # PWSR per 1 WBT (both 18-dec)
 
 
 def wbt_to_wei(wbt: str | float) -> int:
@@ -41,23 +40,17 @@ def _load_candidates(session: Session) -> list[tuple[str, "face_service.np.ndarr
 
 
 def recognize(image_bytes: bytes, session: Session) -> tuple[str, float] | None:
-    """Return (address, distance) or None."""
     query = face_service.embed(image_bytes)
     candidates = _load_candidates(session)
     return face_service.match(query, candidates, settings.face_match_threshold)
 
 
 def enroll(image_bytes: bytes, address: str, session: Session) -> str:
-    """
-    Compute embedding, encrypt, store Enrollment row, return commitment hex.
-    Does NOT create the wallet — caller is responsible.
-    """
     emb = face_service.embed(image_bytes)
     emb_bytes = bytes.fromhex(face_service.embedding_to_hex(emb))
     enc, iv = encrypt(emb_bytes)
     comm = commitment(emb_bytes)
 
-    # Remove old enrollment if re-enrolling
     existing = session.exec(
         select(Enrollment).where(Enrollment.customer_address == address)
     ).first()
@@ -65,13 +58,12 @@ def enroll(image_bytes: bytes, address: str, session: Session) -> str:
         session.delete(existing)
         session.flush()
 
-    enr = Enrollment(
+    session.add(Enrollment(
         customer_address=address,
         enc_embedding_hex=enc.hex(),
         iv_hex=iv.hex(),
         commitment=comm,
-    )
-    session.add(enr)
+    ))
     session.commit()
     return comm
 
@@ -82,10 +74,6 @@ def charge(
     amount_wei: int,
     session: Session,
 ) -> dict:
-    """
-    Execute a payment: (mock) on-chain WBT transfer + PWSR reward.
-    Returns receipt dict.
-    """
     pwsr_wei = calc_pwsr_reward(amount_wei)
     tx_hash = chain_service.send_wbt_payment(customer_address, merchant_address, amount_wei)
 

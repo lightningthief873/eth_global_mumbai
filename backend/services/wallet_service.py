@@ -7,8 +7,8 @@ from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from sqlmodel import Session, select
 
-from ..models import Wallet
-from .crypto_service import encrypt, decrypt
+from models import Wallet
+from services.crypto_service import encrypt, decrypt
 
 
 def create_wallet(session: Session) -> str:

@@ -5,17 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
-from ..db import get_session
-from ..models import Enrollment
-from ..config import settings
+from db import get_session
+from models import Enrollment
 
 router = APIRouter()
 
-# In-memory nonce store: address → {nonce, expiry}
-# TODO: move to Redis or DB for multi-process deployments
 _nonce_store: dict[str, dict] = {}
-
-NONCE_TTL = 3600  # seconds
+NONCE_TTL = 3600
 
 
 class NonceRequest(BaseModel):
@@ -24,7 +20,6 @@ class NonceRequest(BaseModel):
 
 @router.post("/nonce")
 def issue_nonce(req: NonceRequest, session: Session = Depends(get_session)):
-    """Issue a fresh authorization nonce for a recognized customer."""
     enr = session.exec(
         select(Enrollment).where(Enrollment.customer_address == req.address)
     ).first()
@@ -34,13 +29,11 @@ def issue_nonce(req: NonceRequest, session: Session = Depends(get_session)):
     nonce = secrets.token_hex(16)
     expiry = int(time.time()) + NONCE_TTL
     _nonce_store[req.address] = {"nonce": nonce, "expiry": expiry}
-
     return {"nonce": nonce, "expiry": expiry, "ttl": NONCE_TTL}
 
 
 @router.post("/verify-nonce")
 def verify_nonce(req: NonceRequest):
-    """Check if a nonce is valid and unexpired (consumes it)."""
     record = _nonce_store.get(req.address)
     if not record:
         raise HTTPException(404, "No active nonce for this address")

@@ -4,12 +4,12 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .config import settings
-from .db import create_db_and_tables
-from .api.face import router as face_router
-from .api.wallet import router as wallet_router
-from .api.payment import router as payment_router
-from .api.policy import router as policy_router
+from config import settings
+from db import create_db_and_tables
+from api.face import router as face_router
+from api.wallet import router as wallet_router
+from api.payment import router as payment_router
+from api.policy import router as policy_router
 
 
 @asynccontextmanager
@@ -41,9 +41,9 @@ app.include_router(policy_router,  prefix="/api/policy",  tags=["policy"])
 
 @app.get("/health")
 def health():
-    from .services.chain_service import is_connected
+    from services.chain_service import is_connected
     return {"status": "ok", "chain_connected": is_connected()}
 
 
-def main():
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

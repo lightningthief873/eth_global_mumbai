@@ -7,14 +7,13 @@ import secrets
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-from ..config import settings
+from config import settings
 
 
 def _key() -> bytes:
     raw = settings.wallet_encryption_key
     if not raw or len(raw) < 64:
-        # dev-only zero key; never deploy this
-        return bytes(32)
+        return bytes(32)  # dev-only zero key — override in .env
     return bytes.fromhex(raw[:64])
 
 
@@ -30,8 +29,6 @@ def decrypt(ciphertext: bytes, iv: bytes) -> bytes:
 
 
 def commitment(data: bytes) -> str:
-    """keccak256-ish commitment for on-chain BiometricRegistry (using SHA-256 for now).
-    Returns a 0x-prefixed hex string suitable for bytes32."""
+    """SHA-256 commitment for on-chain BiometricRegistry. Returns 0x-prefixed hex bytes32."""
     salt = secrets.token_bytes(32)
-    digest = hashlib.sha256(data + salt).hexdigest()
-    return "0x" + digest
+    return "0x" + hashlib.sha256(data + salt).hexdigest()

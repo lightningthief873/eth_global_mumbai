@@ -3,10 +3,9 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlmodel import Session, select
 
-from ..db import get_session
-from ..models import Enrollment, Payment
-from ..services import payment_service
-from ..config import settings
+from db import get_session
+from models import Enrollment, Payment
+from services import payment_service
 
 router = APIRouter()
 
@@ -19,11 +18,6 @@ async def charge(
     image: Optional[UploadFile] = File(None),
     session: Session = Depends(get_session),
 ):
-    """
-    Charge a customer. Identify by face image OR by custodial address directly.
-    Executes WBT payment and mints PWSR reward.
-    """
-    # --- Identify customer ---
     if address:
         customer_address = address
     elif image:
@@ -35,14 +29,12 @@ async def charge(
     else:
         raise HTTPException(400, "Provide 'address' or 'image'")
 
-    # --- Verify enrolled ---
     enr = session.exec(
         select(Enrollment).where(Enrollment.customer_address == customer_address)
     ).first()
     if not enr:
         raise HTTPException(404, f"Address {customer_address} is not enrolled")
 
-    # --- Parse amount ---
     try:
         amount_wei = payment_service.wbt_to_wei(amount_wbt)
     except Exception:
@@ -51,11 +43,8 @@ async def charge(
     if amount_wei <= 0:
         raise HTTPException(422, "amount_wbt must be positive")
 
-    # --- Execute ---
     receipt = payment_service.charge(customer_address, merchant, amount_wei, session)
-    receipt["explorer_url"] = (
-        f"https://explorer.testnet.whitechain.io/tx/{receipt['tx_hash']}"
-    )
+    receipt["explorer_url"] = f"https://explorer.testnet.whitechain.io/tx/{receipt['tx_hash']}"
     return receipt
 
 
