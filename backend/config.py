@@ -22,8 +22,8 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "sqlite:///./facepay.db"
 
-    # Face matching
-    face_match_threshold: float = 0.35
+    # Face matching — cosine distance cutoff (ArcFace: <~1.0 is same person)
+    face_match_threshold: float = 1.0
 
     # Gas buffer topped up per new wallet (in WBT, human units)
     gas_buffer_wbt: float = 0.01

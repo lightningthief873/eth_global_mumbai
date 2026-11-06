@@ -1,5 +1,5 @@
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field
 
 
@@ -7,7 +7,7 @@ class Customer(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     address: str = Field(unique=True, index=True)
     alias: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class Wallet(SQLModel, table=True):
@@ -26,7 +26,7 @@ class Enrollment(SQLModel, table=True):
     iv_hex: str
     # keccak256(embedding || salt) registered on-chain in BiometricRegistry
     commitment: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class Payment(SQLModel, table=True):
@@ -36,4 +36,4 @@ class Payment(SQLModel, table=True):
     amount_wei: int
     pwsr_wei: int
     tx_hash: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

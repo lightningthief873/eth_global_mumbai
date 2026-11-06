@@ -32,8 +32,7 @@ async def enroll_face(
         session.add(Customer(address=address, alias=alias))
         session.commit()
 
-    comm = payment_service.enroll(image_bytes, address, session)
-    tx_hash = chain_service.mock_tx_hash()
+    comm, tx_hash = payment_service.enroll(image_bytes, address, session)
 
     return {
         "address": address,
