@@ -20,6 +20,7 @@ dependencies = [
     "insightface>=2.1",
     "onnxruntime>=1.31.1",
     "opencv-python-headless>=5.0.0.93",
+    "httpx>=0.28.1",
 ]
 
 [tool.uv]

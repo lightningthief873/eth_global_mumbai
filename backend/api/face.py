@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 
 from db import get_session
 from models import Customer, Enrollment
-from services import payment_service, wallet_service, chain_service
+from services import payment_service, wallet_service, chain_service, usdt_service
 from config import settings
 
 router = APIRouter()
@@ -26,6 +26,11 @@ async def enroll_face(
     if not address:
         address = wallet_service.create_wallet(session)
         chain_service.top_up_wallet(address, settings.gas_buffer_wbt)
+        # Seed demo USDT so this face can pay invoices (gasless via relayer permit).
+        try:
+            usdt_service.fund_usdt(address, usdt_service.to_units(5))
+        except Exception:
+            pass
 
     existing = session.exec(select(Customer).where(Customer.address == address)).first()
     if not existing:

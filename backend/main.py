@@ -11,6 +11,7 @@ from api.face import router as face_router
 from api.wallet import router as wallet_router
 from api.payment import router as payment_router
 from api.policy import router as policy_router
+from api.checkout import router as checkout_router
 from services.face_service import FaceError
 
 
@@ -38,6 +39,7 @@ app.add_middleware(
 app.include_router(face_router,    prefix="/api/face",    tags=["face"])
 app.include_router(wallet_router,  prefix="/api/wallet",  tags=["wallet"])
 app.include_router(payment_router, prefix="/api/payment", tags=["payment"])
+app.include_router(checkout_router, prefix="/api", tags=["checkout"])
 app.include_router(policy_router,  prefix="/api/policy",  tags=["policy"])
 
 
