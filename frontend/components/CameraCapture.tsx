@@ -93,10 +93,9 @@ export default function CameraCapture({ onCapture, label = "Capture" }: Props) {
           <video ref={videoRef} autoPlay playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }} />
         )}
 
-        {/* scanline + readout only while the live feed is active */}
+        {/* live readout only while the feed is active */}
         {live && (
           <>
-            <div className="fp-scanline" style={{ top: "6%" }} />
             <div
               className="absolute left-3 bottom-3 flex items-center gap-2"
               style={{ fontFamily: "var(--font-mono)", fontSize: "0.62rem", letterSpacing: "0.14em", color: "var(--fp-accent)", textTransform: "uppercase" }}
