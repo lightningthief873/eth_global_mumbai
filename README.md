@@ -61,7 +61,7 @@ Backend API (FastAPI / Python)
 | Smart contracts | Solidity 0.8.30 · Foundry · Blockscout verify |
 | Backend | Python 3.13 · FastAPI · SQLModel (SQLite/Postgres) |
 | Chain client | web3.py · eth-account |
-| Face engine | InsightFace / open-source (mock in dev) |
+| Face engine | InsightFace ArcFace (`buffalo_l`, real 512-d embeddings) |
 | Encryption | AES-GCM (cryptography library) |
 | Frontend | Next.js 16 · React 19 · Tailwind CSS 4 · TypeScript |
 | Package manager | uv (backend) · bun (frontend) |
@@ -90,6 +90,8 @@ cd eth_global_mumbai
 
 ### 2. Deploy contracts
 
+> **Contracts are already deployed and verified on Whitechain Sepolia** (addresses in [Smart Contracts](#smart-contracts)). Reuse them via the backend `.env`, or redeploy your own with the steps below.
+
 ```bash
 cd contracts
 cp .env.example .env          # fill PRIVATE_KEY
@@ -112,7 +114,7 @@ Addresses are written to `contracts/deployments/sepolia.json`. Copy them into th
 cd backend
 cp .env.example .env          # fill all vars (see Environment below)
 uv sync
-uv run backend                # uvicorn on :8000
+uv run main.py                # uvicorn on :8000
 ```
 
 API docs at [http://localhost:8000/docs](http://localhost:8000/docs).
@@ -126,15 +128,6 @@ cd frontend
 cp .env.example .env.local    # fill NEXT_PUBLIC_API_URL etc.
 bun install
 bun run dev                   # Next.js on :3000
-```
-
----
-
-### 5. Seed demo data (optional)
-
-```bash
-cd backend
-uv run python scripts/seed_demo.py   # enroll sample faces + fund wallets
 ```
 
 ---
@@ -153,8 +146,9 @@ uv run python scripts/seed_demo.py   # enroll sample faces + fund wallets
 | `BIOMETRIC_REGISTRY_ADDRESS` | Deployed `BiometricRegistry` address |
 | `PAYMENT_PROCESSOR_ADDRESS` | Deployed `PaymentProcessor` address |
 | `DATABASE_URL` | `sqlite:///./facepay.db` (dev) or Postgres URL |
-| `FACE_MATCH_THRESHOLD` | Cosine distance cutoff (default `0.35`) |
-| `GAS_BUFFER_WBT` | WBT topped up per new wallet (default `0.01`) |
+| `FACE_MATCH_THRESHOLD` | ArcFace cosine-distance cutoff (default `0.8`) |
+| `GAS_BUFFER_WBT` | WBT topped up per new wallet on enroll (default `0.05`) |
+| `CORS_ORIGIN` | Allowed frontend origin (default `http://localhost:3000`) |
 
 ### Frontend (`frontend/.env.local`)
 
