@@ -42,27 +42,28 @@ export default function MerchantPage() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <main className="flex flex-col items-center px-4 py-10 flex-1">
-        <div style={{ width: "100%", maxWidth: "520px" }} className="flex flex-col gap-6">
-
+      <main className="flex flex-col items-center px-5 py-12 md:py-16 flex-1">
+        <div style={{ width: "100%", maxWidth: "520px" }} className="flex flex-col gap-7">
           {/* Title */}
-          <div>
-            <h1 style={{ fontWeight: 800, fontSize: "1.75rem", letterSpacing: "-0.02em" }}>
-              Merchant terminal
-            </h1>
-            <p style={{ color: "var(--fp-muted)", fontSize: "0.9rem", marginTop: "0.3rem" }}>
-              Enter the payment details, then scan the customer's face to charge.
-            </p>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex flex-col gap-3">
+              <span className="fp-eyebrow">Point of sale</span>
+              <h1 className="fp-display" style={{ fontSize: "clamp(2rem, 6vw, 2.8rem)" }}>
+                Merchant <span className="fp-serif-italic" style={{ color: "var(--fp-accent)" }}>terminal.</span>
+              </h1>
+            </div>
+            <span className="fp-badge fp-badge-info fp-badge-live">Online</span>
           </div>
 
           {/* Form */}
           {step === "form" && (
-            <div className="fp-card flex flex-col gap-4">
+            <div className="fp-card flex flex-col gap-5">
               <div>
                 <label className="fp-label" htmlFor="merchant">Merchant address (recipient)</label>
                 <input
                   id="merchant"
                   className="fp-input"
+                  style={{ fontFamily: "var(--font-mono)", fontSize: "0.85rem" }}
                   placeholder="0x…"
                   value={merchant}
                   onChange={(e) => setMerchant(e.target.value)}
@@ -70,20 +71,36 @@ export default function MerchantPage() {
               </div>
 
               <div>
-                <label className="fp-label" htmlFor="amount">Amount (WBT)</label>
-                <input
-                  id="amount"
-                  className="fp-input"
-                  type="number"
-                  min="0"
-                  step="0.001"
-                  placeholder="0.001"
-                  value={amountWbt}
-                  onChange={(e) => setAmountWbt(e.target.value)}
-                />
+                <label className="fp-label" htmlFor="amount">Amount</label>
+                <div
+                  className="fp-panel flex items-baseline gap-2"
+                  style={{ padding: "1rem 1.1rem" }}
+                >
+                  <input
+                    id="amount"
+                    className="fp-display"
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    placeholder="0.000"
+                    value={amountWbt}
+                    onChange={(e) => setAmountWbt(e.target.value)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      color: "var(--foreground)",
+                      fontSize: "2.4rem",
+                      flex: 1,
+                      minWidth: 0,
+                      lineHeight: 1,
+                    }}
+                  />
+                  <span className="fp-mono" style={{ fontSize: "0.9rem", color: "var(--fp-muted)", whiteSpace: "nowrap" }}>WBT</span>
+                </div>
                 {amountWbt && Number(amountWbt) > 0 && (
-                  <p style={{ color: "var(--fp-muted)", fontSize: "0.78rem", marginTop: "0.3rem" }}>
-                    Reward: {(Number(amountWbt) * 100).toFixed(2)} PWSR
+                  <p className="fp-mono" style={{ fontSize: "0.72rem", marginTop: "0.5rem", color: "var(--fp-accent-dim)" }}>
+                    + {(Number(amountWbt) * 100).toFixed(2)} PWSR REWARD
                   </p>
                 )}
               </div>
@@ -92,9 +109,8 @@ export default function MerchantPage() {
                 className="fp-btn fp-btn-primary"
                 disabled={!formValid}
                 onClick={() => setStep("scan")}
-                style={{ marginTop: "0.25rem" }}
               >
-                📸 Scan customer face →
+                Scan customer face →
               </button>
             </div>
           )}
@@ -102,25 +118,14 @@ export default function MerchantPage() {
           {/* Scan */}
           {step === "scan" && (
             <div className="fp-card flex flex-col gap-4">
-              {/* Summary bar */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  background: "var(--fp-surface-2)",
-                  borderRadius: "8px",
-                  padding: "0.65rem 0.875rem",
-                }}
-              >
-                <span style={{ color: "var(--fp-muted)", fontSize: "0.82rem" }}>Charging</span>
-                <span style={{ fontWeight: 700, fontSize: "1.1rem" }}>{amountWbt} WBT</span>
+              <div className="fp-panel flex items-center justify-between" style={{ padding: "0.85rem 1.1rem" }}>
+                <span className="fp-label" style={{ margin: 0 }}>Charging</span>
+                <span className="fp-display" style={{ fontSize: "1.5rem" }}>
+                  {amountWbt} <span style={{ fontSize: "0.9rem", color: "var(--fp-muted)" }}>WBT</span>
+                </span>
               </div>
 
-              <CameraCapture
-                label="Scan & charge"
-                onCapture={(blob) => { onCapture(blob); }}
-              />
+              <CameraCapture label="Scan & charge" onCapture={(blob) => { onCapture(blob); }} />
 
               <button className="fp-btn fp-btn-ghost" onClick={() => setStep("form")}>
                 ← Back to form
@@ -130,23 +135,22 @@ export default function MerchantPage() {
 
           {/* Charging */}
           {step === "charging" && (
-            <div className="fp-card flex flex-col items-center gap-4 py-10">
-              <div style={{ width: "2.5rem", height: "2.5rem", border: "3px solid var(--fp-border)", borderTopColor: "var(--fp-accent)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-              <p style={{ fontWeight: 600 }}>Processing payment…</p>
-              <p style={{ color: "var(--fp-muted)", fontSize: "0.82rem" }}>Identifying customer and signing transaction</p>
-              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <div className="fp-card flex flex-col items-center gap-4 py-12">
+              <div className="fp-spinner" style={{ width: "2.5rem", height: "2.5rem" }} />
+              <p style={{ fontWeight: 650 }}>Processing payment</p>
+              <p className="fp-mono" style={{ fontSize: "0.72rem", letterSpacing: "0.1em", color: "var(--fp-muted)", textAlign: "center" }}>
+                IDENTIFYING CUSTOMER · SIGNING TX
+              </p>
             </div>
           )}
 
           {/* Done */}
-          {step === "done" && receipt && (
-            <TxReceipt receipt={receipt} onReset={reset} />
-          )}
+          {step === "done" && receipt && <TxReceipt receipt={receipt} onReset={reset} />}
 
           {/* Error */}
           {step === "error" && (
-            <div className="fp-card" style={{ borderColor: "var(--fp-error)" }}>
-              <p style={{ color: "var(--fp-error)", fontWeight: 600, marginBottom: "0.5rem" }}>Payment failed</p>
+            <div className="fp-card" style={{ borderColor: "color-mix(in srgb, var(--fp-error) 50%, var(--fp-border))" }}>
+              <p style={{ color: "var(--fp-error)", fontWeight: 650, marginBottom: "0.5rem" }}>Payment failed</p>
               <p style={{ color: "var(--fp-muted)", fontSize: "0.85rem", marginBottom: "1rem" }}>{error}</p>
               <div className="flex gap-2">
                 <button className="fp-btn fp-btn-ghost" style={{ flex: 1 }} onClick={() => setStep("scan")}>
@@ -162,19 +166,18 @@ export default function MerchantPage() {
           {/* Demo tip */}
           {step === "form" && (
             <div
+              className="fp-panel"
               style={{
-                background: "color-mix(in srgb, var(--fp-warning) 8%, transparent)",
-                border: "1px solid color-mix(in srgb, var(--fp-warning) 25%, transparent)",
-                borderRadius: "10px",
-                padding: "0.875rem",
+                padding: "1rem 1.1rem",
                 fontSize: "0.82rem",
                 color: "var(--fp-muted)",
-                lineHeight: 1.6,
+                lineHeight: 1.65,
+                borderColor: "color-mix(in srgb, var(--fp-warning) 28%, var(--fp-border))",
               }}
             >
-              <strong style={{ color: "var(--fp-warning)" }}>Demo mode:</strong> Face recognition uses
-              deterministic hash-based embeddings. Upload the same image file you used for enrollment
-              to get a confirmed match.
+              <span className="fp-label" style={{ color: "var(--fp-warning)" }}>Demo mode</span>
+              Recognition uses deterministic hash-based embeddings. Upload the same
+              image file used at enrollment to get a confirmed match.
             </div>
           )}
         </div>
