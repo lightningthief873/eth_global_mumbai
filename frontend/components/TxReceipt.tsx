@@ -1,7 +1,15 @@
-import type { ChargeResponse } from "@/lib/api";
+export interface ReceiptView {
+  asset: "WBT" | "USDT";
+  amountDisplay: string;       // formatted primary amount
+  reward?: { label: string; amount: string } | null;  // e.g. PWSR for WBT
+  customer: string;
+  merchant: string;
+  tx_hash: string;
+  explorer_url: string;
+}
 
 interface Props {
-  receipt: ChargeResponse;
+  receipt: ReceiptView;
   onReset?: () => void;
 }
 
@@ -37,21 +45,21 @@ export default function TxReceipt({ receipt, onReset }: Props) {
       </div>
 
       {/* Amounts */}
-      <div className="grid gap-3" style={{ gridTemplateColumns: "1fr 1fr" }}>
+      <div className="grid gap-3" style={{ gridTemplateColumns: receipt.reward ? "1fr 1fr" : "1fr" }}>
         <div className="fp-panel" style={{ padding: "1rem" }}>
-          <p className="fp-label" style={{ marginBottom: "0.45rem" }}>WBT paid</p>
-          <p className="fp-display" style={{ fontSize: "1.5rem", lineHeight: 1 }}>
-            {(Number(BigInt(receipt.amount_wei)) / 1e18).toFixed(6)}
-          </p>
-          <p className="fp-mono" style={{ fontSize: "0.66rem", marginTop: "0.35rem" }}>WBT</p>
+          <p className="fp-label" style={{ marginBottom: "0.45rem" }}>{receipt.asset} paid</p>
+          <p className="fp-display" style={{ fontSize: "1.5rem", lineHeight: 1 }}>{receipt.amountDisplay}</p>
+          <p className="fp-mono" style={{ fontSize: "0.66rem", marginTop: "0.35rem" }}>{receipt.asset}</p>
         </div>
-        <div className="fp-panel" style={{ padding: "1rem" }}>
-          <p className="fp-label" style={{ marginBottom: "0.45rem", color: "var(--fp-accent-dim)" }}>PWSR earned</p>
-          <p className="fp-display" style={{ fontSize: "1.5rem", lineHeight: 1, color: "var(--fp-accent)" }}>
-            +{(Number(BigInt(receipt.pwsr_wei)) / 1e18).toFixed(6)}
-          </p>
-          <p className="fp-mono" style={{ fontSize: "0.66rem", marginTop: "0.35rem" }}>PWSR</p>
-        </div>
+        {receipt.reward && (
+          <div className="fp-panel" style={{ padding: "1rem" }}>
+            <p className="fp-label" style={{ marginBottom: "0.45rem", color: "var(--fp-accent-dim)" }}>{receipt.reward.label} earned</p>
+            <p className="fp-display" style={{ fontSize: "1.5rem", lineHeight: 1, color: "var(--fp-accent)" }}>
+              +{receipt.reward.amount}
+            </p>
+            <p className="fp-mono" style={{ fontSize: "0.66rem", marginTop: "0.35rem" }}>{receipt.reward.label}</p>
+          </div>
+        )}
       </div>
 
       {/* Addresses */}

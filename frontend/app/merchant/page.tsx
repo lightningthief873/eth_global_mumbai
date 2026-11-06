@@ -4,25 +4,48 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import CameraCapture from "@/components/CameraCapture";
 import TxReceipt from "@/components/TxReceipt";
+import type { ReceiptView } from "@/components/TxReceipt";
 import { payment } from "@/lib/api";
-import type { ChargeResponse } from "@/lib/api";
 
 type Step = "form" | "scan" | "charging" | "done" | "error";
+type Asset = "WBT" | "USDT";
 
 export default function MerchantPage() {
   const [step, setStep] = useState<Step>("form");
+  const [asset, setAsset] = useState<Asset>("USDT");
   const [merchant, setMerchant] = useState("");
-  const [amountWbt, setAmountWbt] = useState("");
-  const [receipt, setReceipt] = useState<ChargeResponse | null>(null);
+  const [amount, setAmount] = useState("");
+  const [receipt, setReceipt] = useState<ReceiptView | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function onCapture(blob: Blob) {
-    if (!merchant || !amountWbt) return;
+    if (!merchant || !amount) return;
     setStep("charging");
     setError(null);
     try {
-      const res = await payment.charge({ merchant, amount_wbt: amountWbt, image: blob });
-      setReceipt(res);
+      if (asset === "USDT") {
+        const r = await payment.chargeUsdt({ merchant, amount_usdt: amount, image: blob });
+        setReceipt({
+          asset: "USDT",
+          amountDisplay: Number(r.amount_usdt).toFixed(2),
+          reward: null,
+          customer: r.customer,
+          merchant: r.merchant,
+          tx_hash: r.tx_hash,
+          explorer_url: r.explorer_url,
+        });
+      } else {
+        const r = await payment.charge({ merchant, amount_wbt: amount, image: blob });
+        setReceipt({
+          asset: "WBT",
+          amountDisplay: (Number(BigInt(r.amount_wei)) / 1e18).toFixed(6),
+          reward: { label: "PWSR", amount: (Number(BigInt(r.pwsr_wei)) / 1e18).toFixed(6) },
+          customer: r.customer,
+          merchant: r.merchant,
+          tx_hash: r.tx_hash,
+          explorer_url: r.explorer_url,
+        });
+      }
       setStep("done");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -36,7 +59,7 @@ export default function MerchantPage() {
     setError(null);
   }
 
-  const formValid = merchant.startsWith("0x") && merchant.length === 42 && Number(amountWbt) > 0;
+  const formValid = merchant.startsWith("0x") && merchant.length === 42 && Number(amount) > 0;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -58,6 +81,33 @@ export default function MerchantPage() {
           {/* Form */}
           {step === "form" && (
             <div className="fp-card flex flex-col gap-5">
+              {/* Asset toggle */}
+              <div>
+                <label className="fp-label">Settlement asset</label>
+                <div className="fp-panel flex gap-1" style={{ padding: "0.3rem" }}>
+                  {(["USDT", "WBT"] as Asset[]).map((a) => (
+                    <button
+                      key={a}
+                      onClick={() => setAsset(a)}
+                      className="fp-btn"
+                      style={{
+                        flex: 1,
+                        background: asset === a ? "var(--fp-accent)" : "transparent",
+                        color: asset === a ? "#0a0a0a" : "var(--fp-muted)",
+                        fontWeight: 650,
+                      }}
+                    >
+                      {a}
+                    </button>
+                  ))}
+                </div>
+                <p className="fp-mono" style={{ fontSize: "0.68rem", marginTop: "0.4rem", color: "var(--fp-muted)" }}>
+                  {asset === "USDT"
+                    ? "STABLECOIN · GASLESS FOR CUSTOMER · SETTLES VIA PAYMENTHUB"
+                    : "NATIVE WBT · EARNS PWSR REWARD"}
+                </p>
+              </div>
+
               <div>
                 <label className="fp-label" htmlFor="merchant">Merchant address (recipient)</label>
                 <input
@@ -72,19 +122,16 @@ export default function MerchantPage() {
 
               <div>
                 <label className="fp-label" htmlFor="amount">Amount</label>
-                <div
-                  className="fp-panel flex items-baseline gap-2"
-                  style={{ padding: "1rem 1.1rem" }}
-                >
+                <div className="fp-panel flex items-baseline gap-2" style={{ padding: "1rem 1.1rem" }}>
                   <input
                     id="amount"
                     className="fp-display"
                     type="number"
                     min="0"
-                    step="0.001"
-                    placeholder="0.000"
-                    value={amountWbt}
-                    onChange={(e) => setAmountWbt(e.target.value)}
+                    step={asset === "USDT" ? "0.01" : "0.001"}
+                    placeholder={asset === "USDT" ? "0.00" : "0.000"}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
                     style={{
                       background: "transparent",
                       border: "none",
@@ -96,11 +143,11 @@ export default function MerchantPage() {
                       lineHeight: 1,
                     }}
                   />
-                  <span className="fp-mono" style={{ fontSize: "0.9rem", color: "var(--fp-muted)", whiteSpace: "nowrap" }}>WBT</span>
+                  <span className="fp-mono" style={{ fontSize: "0.9rem", color: "var(--fp-muted)", whiteSpace: "nowrap" }}>{asset}</span>
                 </div>
-                {amountWbt && Number(amountWbt) > 0 && (
+                {asset === "WBT" && amount && Number(amount) > 0 && (
                   <p className="fp-mono" style={{ fontSize: "0.72rem", marginTop: "0.5rem", color: "var(--fp-accent-dim)" }}>
-                    + {(Number(amountWbt) * 100).toFixed(2)} PWSR REWARD
+                    + {(Number(amount) * 100).toFixed(2)} PWSR REWARD
                   </p>
                 )}
               </div>
@@ -121,7 +168,7 @@ export default function MerchantPage() {
               <div className="fp-panel flex items-center justify-between" style={{ padding: "0.85rem 1.1rem" }}>
                 <span className="fp-label" style={{ margin: 0 }}>Charging</span>
                 <span className="fp-display" style={{ fontSize: "1.5rem" }}>
-                  {amountWbt} <span style={{ fontSize: "0.9rem", color: "var(--fp-muted)" }}>WBT</span>
+                  {amount} <span style={{ fontSize: "0.9rem", color: "var(--fp-muted)" }}>{asset}</span>
                 </span>
               </div>
 
@@ -151,7 +198,7 @@ export default function MerchantPage() {
           {step === "error" && (
             <div className="fp-card" style={{ borderColor: "color-mix(in srgb, var(--fp-error) 50%, var(--fp-border))" }}>
               <p style={{ color: "var(--fp-error)", fontWeight: 650, marginBottom: "0.5rem" }}>Payment failed</p>
-              <p style={{ color: "var(--fp-muted)", fontSize: "0.85rem", marginBottom: "1rem" }}>{error}</p>
+              <p style={{ color: "var(--fp-muted)", fontSize: "0.85rem", marginBottom: "1rem", wordBreak: "break-word" }}>{error}</p>
               <div className="flex gap-2">
                 <button className="fp-btn fp-btn-ghost" style={{ flex: 1 }} onClick={() => setStep("scan")}>
                   Retry scan
@@ -176,8 +223,8 @@ export default function MerchantPage() {
               }}
             >
               <span className="fp-label" style={{ color: "var(--fp-warning)" }}>Demo mode</span>
-              Recognition uses deterministic hash-based embeddings. Upload the same
-              image file used at enrollment to get a confirmed match.
+              Scan the same face used at enrollment to get a confirmed match. USDT
+              settles gaslessly via PaymentHub; WBT pays natively and mints PWSR.
             </div>
           )}
         </div>

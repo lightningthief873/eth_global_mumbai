@@ -74,6 +74,15 @@ export interface ChargeResponse {
   explorer_url: string;
 }
 
+export interface UsdtChargeResponse {
+  asset: "USDT";
+  tx_hash: string;
+  amount_units: string;
+  amount_usdt: string;
+  customer: string;
+  merchant: string;
+  explorer_url: string;
+}
 export interface PaymentRecord {
   id: number;
   merchant: string;
@@ -101,6 +110,19 @@ export const payment = {
     return request<ChargeResponse>("/api/payment/charge", { method: "POST", body: fd });
   },
 
+  chargeUsdt: (opts: {
+    merchant: string;
+    amount_usdt: string;
+    image?: Blob;
+    address?: string;
+  }) => {
+    const fd = new FormData();
+    fd.append("merchant", opts.merchant);
+    fd.append("amount_usdt", opts.amount_usdt);
+    if (opts.image) fd.append("image", opts.image, "capture.jpg");
+    if (opts.address) fd.append("address", opts.address);
+    return request<UsdtChargeResponse>("/api/payment/charge-usdt", { method: "POST", body: fd });
+  },
   history: (address: string) =>
     request<PaymentRecord[]>(`/api/payment/history/${address}`),
 };
